@@ -1,0 +1,409 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>НЕ-квест: слитно или раздельно</title>
+<style>
+:root{
+  --bg:#F8FAFC; --card:#FFFFFF; --text:#0F172A; --muted:#475569; --accent:#0284C7; --accent2:#D97706;
+  --ok:#15803D; --okbg:#DCFCE7; --bad:#B91C1C; --badbg:#FEE2E2; --hl:#FDE68A; --line:#CBD5E1; --btn:#E2E8F0;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0F172A; --card:#1E293B; --text:#F1F5F9; --muted:#CBD5E1; --accent:#38BDF8; --accent2:#FBBF24;
+    --ok:#4ADE80; --okbg:#14532D; --bad:#FCA5A5; --badbg:#7F1D1D; --hl:#FDE68A; --line:#334155; --btn:#334155;
+  }
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text)}
+body{font-family:"Segoe UI",Calibri,Arial,sans-serif;font-size:20px;line-height:1.45;-webkit-text-size-adjust:100%}
+main{max-width:760px;margin:0 auto;padding:16px 16px 40px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.brand{font-weight:800;font-size:22px;color:var(--accent)}
+.stat{font-size:17px;color:var(--muted)}
+.bar{height:10px;background:var(--btn);border-radius:6px;overflow:hidden;margin-bottom:16px}
+.bar>div{height:100%;background:var(--accent);width:0;transition:width .3s}
+.card{background:var(--card);border-radius:20px;padding:22px 20px;box-shadow:0 2px 10px rgba(15,23,42,.08);border:1px solid var(--line)}
+.lvl{font-size:16px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.04em}
+h1{font-size:30px;margin:6px 0 12px;line-height:1.2}
+h2{font-size:24px;margin:4px 0 14px;line-height:1.3}
+p{margin:8px 0}
+.q{font-size:22px;font-weight:600;margin:4px 0 16px}
+.sent{font-size:24px;line-height:2.1;margin:8px 0 16px;word-wrap:break-word}
+button{font:inherit;color:var(--text);cursor:pointer;-webkit-tap-highlight-color:transparent}
+.btn{display:block;width:100%;min-height:56px;padding:12px 16px;margin:10px 0;border-radius:14px;border:2px solid var(--line);background:var(--card);font-size:21px;text-align:left}
+.btn:hover{border-color:var(--accent)}
+.main-btn{display:block;width:100%;min-height:60px;margin:14px 0 0;border:0;border-radius:14px;background:var(--accent);color:#fff;font-size:22px;font-weight:700}
+.dark .main-btn{color:#0F172A}
+@media (prefers-color-scheme: dark){.main-btn{color:#0F172A}}
+.sec-btn{display:block;width:100%;min-height:56px;margin:10px 0 0;border-radius:14px;border:2px solid var(--accent);background:transparent;color:var(--accent);font-size:20px;font-weight:700}
+.row{display:flex;flex-wrap:wrap;gap:10px}
+.row .btn{width:auto;flex:1 1 120px;text-align:center;font-size:24px;font-weight:700}
+.good{background:var(--okbg)!important;border-color:var(--ok)!important}
+.badc{background:var(--badbg)!important;border-color:var(--bad)!important}
+.shake{animation:sh .35s}
+@keyframes sh{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+.slot{display:inline-block;min-width:64px;min-height:44px;padding:0 10px;border:3px dashed var(--accent);border-radius:10px;text-align:center;vertical-align:middle;line-height:38px;font-weight:800;color:var(--accent)}
+.fb{margin-top:16px;padding:14px 16px;border-radius:14px;font-size:19px;display:none}
+.fb.show{display:block}
+.fb.ok{background:var(--okbg);border:2px solid var(--ok)}
+.fb.no{background:var(--badbg);border:2px solid var(--bad)}
+.fb b{display:block;margin-bottom:4px;font-size:21px}
+/* tokens */
+.tok{display:inline-block;min-height:56px;margin:5px 3px;padding:8px 12px;border-radius:12px;border:2px solid var(--line);background:var(--card);font-size:23px}
+/* sort */
+.pool{display:flex;flex-wrap:wrap;gap:10px;min-height:66px;padding:10px;border-radius:14px;background:var(--btn);margin-bottom:14px}
+.chip{min-height:56px;padding:10px 14px;border-radius:12px;border:2px solid var(--line);background:var(--card);font-size:20px;touch-action:none;user-select:none;-webkit-user-select:none}
+.chip.sel{border-color:var(--accent);background:var(--hl);color:#0F172A}
+.bins{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:520px){.bins{grid-template-columns:1fr}}
+.bin{min-height:150px;border:3px dashed var(--accent);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:8px;background:transparent;text-align:left}
+.bin .bt{font-weight:800;color:var(--accent);font-size:19px;padding:4px 2px}
+.bin.over{background:var(--hl)}
+.drag{position:fixed;z-index:50;pointer-events:none;opacity:.9;transform:translate(-50%,-50%) scale(1.05);box-shadow:0 8px 20px rgba(0,0,0,.25)}
+/* match */
+.mgrid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+@media (max-width:520px){.mgrid .btn{font-size:16px;padding:10px 5px}}
+.mgrid .btn{text-align:center;font-weight:700;margin:0}
+.pair1{background:#DBEAFE!important;border-color:#1D4ED8!important;color:#0F172A}
+.pair2{background:#FCE7F3!important;border-color:#BE185D!important;color:#0F172A}
+.pair3{background:#FEF3C7!important;border-color:#A16207!important;color:#0F172A}
+.pair4{background:#EDE9FE!important;border-color:#6D28D9!important;color:#0F172A}
+.pair5{background:#DCFCE7!important;border-color:#15803D!important;color:#0F172A}
+.ne{white-space:nowrap}
+/* order */
+.olist{counter-reset:o;margin:0 0 10px;padding:0}
+.oitem{display:flex;align-items:center;gap:10px;min-height:56px;margin:8px 0;padding:10px 14px;border-radius:12px;border:2px solid var(--accent);background:var(--card);font-size:20px}
+.oitem .n{flex:0 0 36px;height:36px;border-radius:50%;background:var(--accent);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center}
+.hintsmall{font-size:16px;color:var(--muted)}
+.stars{font-size:54px;letter-spacing:6px;margin:6px 0}
+.big{font-size:40px;font-weight:800;margin:4px 0}
+.shot{margin-top:14px;padding:14px;border-radius:14px;background:var(--hl);color:#0F172A;font-weight:700;font-size:20px}
+.streak{font-weight:700;color:var(--accent2)}
+ul.res{padding-left:22px}
+</style>
+</head>
+<body>
+<main>
+<header><div class="brand">🧩 НЕ-квест</div><div class="stat" id="stat"></div></header>
+<div class="bar"><div id="bar"></div></div>
+<div class="card" id="app"></div>
+</main>
+<script>
+"use strict";
+const LEVELS = [
+ {name:"Уровень 1. Деревня существительных",
+  intro:"Здесь живут существительные, прилагательные и наречия. Главный вопрос: можно ли заменить слово синонимом без НЕ и нет ли рядом союза А?",
+  outro:"Уровень пройден! Неряхи остались слитными, а «не друг, а враг» — раздельными. Всё по-честному.",
+  tasks:[
+  {t:"choice", sub:"Сущ., прил., наречия", q:"Мы живём ___ от школы — пять минут пешком. Что вставить?",
+   opts:["недалеко","не далеко"], a:0,
+   why:"«Недалеко» = «близко»: можно заменить синонимом без НЕ, поэтому слитно.",
+   hint:"Попробуй заменить слово синонимом без НЕ. Получилось — пиши слитно."},
+  {t:"ne", sub:"Сущ., прил., наречия", q:"Как написать НЕ: слитно или раздельно?",
+   before:"Это", word:"смелость", after:", а глупость.", a:"sep",
+   why:"Есть противопоставление с союзом А, поэтому раздельно: «не смелость, а глупость».",
+   hint:"Ищи союз А: есть противопоставление — пиши раздельно."},
+  {t:"match", sub:"Сущ., прил., наречия", q:"Соедини слово с НЕ и его синоним без НЕ: нажми слева, потом справа.",
+   pairs:[["неправда","ложь"],["недалеко","близко"],["небольшой","маленький"],["невесёлый","грустный"],["неглубокий","мелкий"]],
+   why:"Синоним без НЕ нашёлся у каждого слова — значит, все они пишутся слитно.",
+   hint:"Подбери слово с тем же смыслом: «неправда» — это…"},
+  {t:"sort", sub:"Сущ., прил., наречия", q:"Разложи по группам: перетащи пальцем или нажми на слово, а потом на группу.",
+   bins:["Слитно ‿","Раздельно |"],
+   items:[["(не)лепый",0],["(не)весело, а скучно",1],["(не)вежда",0],["(не)большой, а огромный",1],["(не)глубокое озеро",0],["(не)друг, а враг",1]],
+   why:"Слитно: нелепый и невежда (без НЕ не бывает), неглубокое (= мелкое). Раздельно — там, где есть противопоставление с А.",
+   hint:"Есть противопоставление с А — раздельно; нет — слитно."},
+  {t:"err", sub:"Сущ., прил., наречия", q:"Нажми на слово с ошибкой.",
+   tokens:["Мой","неуклюжий","щенок","убежал","не далеко","и","быстро","вернулся."], a:4,
+   why:"Правильно «недалеко»: можно заменить словом «близко», противопоставления нет.",
+   hint:"Проверь каждое НЕ: можно ли заменить слово синонимом без НЕ?"}
+ ]},
+ {name:"Уровень 2. Завод глаголов",
+  intro:"Глаголы и деепричастия с НЕ пишутся раздельно. Но здесь водятся хитрецы, которые без НЕ не живут: ненавидеть, негодовать, недоумевать.",
+  outro:"Завод пройден! Глаголы негодуют, но признают твою победу 😎",
+  tasks:[
+  {t:"choice", sub:"Слова без НЕ", q:"Брат ___ мыть посуду. Что вставить?",
+   opts:["ненавидит","не навидит"], a:0,
+   why:"Глагола «навидеть» нет: слово без НЕ не употребляется, поэтому слитно.",
+   hint:"Закрой НЕ пальцем: если слова не осталось, пиши слитно."},
+  {t:"ne", sub:"Глаголы и деепричастия", q:"Как написать НЕ: слитно или раздельно?",
+   before:"Я", word:"смог", after:" пройти этот уровень.", a:"sep",
+   why:"НЕ с глаголами пишется раздельно: «не смог».",
+   hint:"НЕ с глаголами — раздельно, кроме слов, которые без НЕ не употребляются."},
+  {t:"tf", sub:"Глаголы и деепричастия", q:"Деепричастие «не глядя» пишется слитно.", a:false,
+   why:"Неверно: НЕ с деепричастиями пишется раздельно — «не глядя».",
+   hint:"Деепричастия с НЕ ведут себя так же, как глаголы."},
+  {t:"order", sub:"Глаголы и деепричастия", q:"Расставь шаги проверки глагола по порядку: нажимай на них один за другим.",
+   items:["Закрой НЕ пальцем.","Прочитай, что осталось.","Реши: слово есть — раздельно, слова нет — слитно."],
+   why:"Закрыть — прочитать — решить. Три шага, и глагол пойман.",
+   hint:"Нельзя прочитать то, что осталось, пока НЕ не закрыто."},
+  {t:"err", sub:"Глаголы и деепричастия", q:"Нажми на слово с ошибкой.",
+   tokens:["Не дожидаясь","лифта,","я","побежал","по","лестнице,","но","всё","равно","неуспел."], a:9,
+   why:"Правильно «не успел»: слово «успел» без НЕ существует, значит, раздельно.",
+   hint:"Ищи глагол, написанный с НЕ слитно, хотя без НЕ он прекрасно существует."}
+ ]},
+ {name:"Уровень 3. Лаборатория причастий",
+  intro:"Причастия с НЕ: краткое — раздельно, с зависимым словом — раздельно, полное и без зависимых слов — слитно.",
+  outro:"Лаборатория пройдена! Зависимые слова больше не смогут от тебя спрятаться.",
+  tasks:[
+  {t:"choice", sub:"Причастия", q:"В чате висит ___ сообщение. Что вставить?",
+   opts:["непрочитанное","не прочитанное"], a:0,
+   why:"Полное причастие без зависимых слов пишется с НЕ слитно.",
+   hint:"Есть ли у причастия зависимые слова? Нет — пиши слитно."},
+  {t:"ne", sub:"Причастия", q:"Как написать НЕ: слитно или раздельно?",
+   before:"Сообщение до сих пор", word:"прочитано", after:".", a:"sep",
+   why:"Краткое причастие с НЕ всегда пишется раздельно: «не прочитано».",
+   hint:"Краткое причастие (что сделано?) с НЕ — раздельно."},
+  {t:"sort", sub:"Причастия", q:"Разложи по группам: перетащи пальцем или нажми на сочетание, а потом на группу.",
+   bins:["Слитно ‿","Раздельно |"],
+   items:[["(не)решённая задача",0],["задача, (не)решённая мной",1],["задача (не)решена",1],["(не)выученный стих",0],["(не)выученный вовремя стих",1],["(не)навидящий взгляд",0]],
+   why:"Слитно: нерешённая, невыученный (полные, без зависимых слов), ненавидящий (без НЕ не бывает). Раздельно: краткое причастие или есть зависимое слово.",
+   hint:"Краткое или с зависимым словом — раздельно; полное и одно — слитно."},
+  {t:"tf", sub:"Причастия", q:"В сочетании «не проверенная учителем работа» НЕ пишется раздельно, потому что у причастия есть зависимое слово.", a:true,
+   why:"Верно: «учителем» — зависимое слово (проверенная кем?), поэтому раздельно.",
+   hint:"Найди слово, которое зависит от причастия: проверенная кем?"},
+  {t:"match", sub:"Причастия", q:"Соедини сочетание и причину, почему НЕ написано именно так.",
+   pairs:[["непройденный уровень","нет зависимых слов"],["не пройденный мной уровень","есть зависимое слово"],["уровень не пройден","краткое причастие"],["не пройденный, а пропущенный уровень","есть союз А"]],
+   why:"Раздельно — краткое причастие, зависимое слово или противопоставление. Слитно — полное причастие без зависимых слов.",
+   hint:"Спроси себя: причастие краткое? Есть зависимое слово? Есть союз А?"}
+ ]},
+ {name:"Уровень 4. Логово босса",
+  intro:"Финал! Тут всё вперемешку: существительные, глаголы, причастия и слова, которые без НЕ не живут.",
+  outro:"Босс повержен! Сломанный автокорректор просится к тебе в ученики.",
+  tasks:[
+  {t:"err", sub:"Причастия", q:"Нажми на слово с ошибкой.",
+   tokens:["Ненастным","вечером","я,","негодуя,","сел","за","непроверенное мамой","сочинение."], a:6,
+   why:"Правильно «не проверенное мамой»: у причастия есть зависимое слово «мамой».",
+   hint:"Проверь причастие: есть ли у него зависимое слово?"},
+  {t:"choice", sub:"Причастия", q:"Кот, ___ никем, стащил котлету. Что вставить?",
+   opts:["незамеченный","не замеченный"], a:1,
+   why:"«Никем» — зависимое слово, поэтому раздельно: «не замеченный никем».",
+   hint:"Есть зависимое слово — пиши раздельно."},
+  {t:"ne", sub:"Слова без НЕ", q:"Как написать НЕ: слитно или раздельно?",
+   before:"Мы", word:"доумевали", after:", куда пропал интернет.", a:"join",
+   why:"Глагола «доумевать» нет: без НЕ слово не употребляется, поэтому слитно — «недоумевали».",
+   hint:"Закрой НЕ: осталось настоящее слово?"},
+  {t:"tf", sub:"Слова без НЕ", q:"«Нездоровится» пишется раздельно, ведь НЕ с глаголами всегда пишется раздельно.", a:false,
+   why:"Неверно: слова «здоровится» нет, поэтому слитно — «мне нездоровится».",
+   hint:"Закрой НЕ пальцем: есть ли слово «здоровится»?"}
+ ]}
+];
+
+const PRAISE=["Верно! 🔥","Точно в цель! 🎯","Красиво! ✨","Так держать! 💪","Частица НЕ тобой гордится! 🙌","Без единой помарки! 😎","Уровень грамотности растёт! 📈","Ты сегодня в ударе! ⚡"];
+const OOPS=["Почти! Подумай ещё 🤔","Не-а, но ты близко 🙂","НЕ обиделась, попробуй ещё раз 😅","Мимо, но это поправимо 🔁"];
+
+const ALL=[]; LEVELS.forEach((L,li)=>L.tasks.forEach(t=>{t.level=li;t.id=ALL.length;ALL.push(t);}));
+let S; // state
+const app=document.getElementById("app");
+const $=(tag,cls,html)=>{const e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;};
+const esc=s=>String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+
+function reset(){S={mode:"main",queue:ALL.map(t=>t.id),pos:0,first:{},streak:0,best:0,shownIntro:{}};}
+function stat(){
+  const total=S.queue.length, done=Math.min(S.pos,total);
+  document.getElementById("bar").style.width=(total?done/total*100:0)+"%";
+  document.getElementById("stat").innerHTML=(S.mode==="main"?"Задание ":"Ошибка ")+Math.min(done+1,total)+" из "+total+(S.streak>=2?' · <span class="streak">серия '+S.streak+' 🔥</span>':"");
+}
+
+function start(){
+  reset(); app.dataset.task="start";
+  app.innerHTML="";
+  app.append($("div","lvl","Домашнее задание"),$("h1",null,"НЕ с разными частями речи: слитно или раздельно?"),
+    $("p",null,"Тебя ждут 4 уровня игры и "+ALL.length+" заданий. Ошибся — получишь подсказку и сможешь попробовать ещё раз."),
+    $("p",null,"В конце будут звёзды и работа над ошибками. Регистрация не нужна, ничего никуда не отправляется."));
+  const b=$("button","main-btn","Начать квест ▶"); b.onclick=next; app.append(b);
+  document.getElementById("stat").textContent=""; document.getElementById("bar").style.width="0";
+}
+
+function next(){
+  if(S.pos>=S.queue.length){return S.mode==="main"?finish():finishFix();}
+  const t=ALL[S.queue[S.pos]];
+  if(S.mode==="main"&&!S.shownIntro[t.level]){S.shownIntro[t.level]=1;return levelScreen(t.level,true);}
+  render(t);
+}
+function levelScreen(li,isIntro){
+  const L=LEVELS[li]; app.innerHTML=""; app.dataset.task="level"; stat();
+  app.append($("div","lvl",isIntro?"Новый уровень":"Уровень пройден"),$("h1",null,esc(L.name)),$("p",null,esc(isIntro?L.intro:L.outro)));
+  const b=$("button","main-btn",isIntro?"Вперёд ▶":"Дальше ▶");
+  b.onclick=isIntro?()=>render(ALL[S.queue[S.pos]]):next; app.append(b);
+}
+
+let cur=null;
+function render(t){
+  cur={t,tries:0,done:false}; stat(); app.innerHTML="";
+  app.dataset.task=t.id; app.dataset.type=t.t;
+  app.append($("div","lvl",esc(LEVELS[t.level].name)+" · "+esc(t.sub)));
+  app.append($("div","q",esc(t.q)));
+  const body=$("div","body"); app.append(body);
+  const fb=$("div","fb"); fb.id="fb"; app.append(fb);
+  ({choice:rChoice,tf:rTF,ne:rNe,err:rErr,sort:rSort,match:rMatch,order:rOrder})[t.t](t,body);
+}
+function feedback(ok,text){
+  const fb=document.getElementById("fb");
+  fb.className="fb show "+(ok?"ok":"no");
+  fb.innerHTML="<b>"+(ok?pick(PRAISE):pick(OOPS))+"</b>"+esc(text);
+}
+function wrong(el){
+  cur.tries++; S.streak=0; stat();
+  if(el){el.classList.add("badc","shake");setTimeout(()=>el.classList.remove("shake"),400);}
+  feedback(false,"Подсказка: "+cur.t.hint);
+}
+function right(){
+  if(cur.done)return; cur.done=true;
+  const t=cur.t;
+  if(S.mode==="main"){S.first[t.id]=cur.tries===0;}
+  else if(cur.tries===0){S.fixed=(S.fixed||0)+1;}
+  if(cur.tries===0){S.streak++;S.best=Math.max(S.best,S.streak);}
+  feedback(true,t.why);
+  app.querySelectorAll("button:not(.main-btn)").forEach(b=>b.disabled=true);
+  S.pos++; stat();
+  const b=$("button","main-btn","Дальше ▶"); b.id="nextBtn";
+  const lastOfLevel=S.mode==="main"&&(S.pos>=S.queue.length||ALL[S.queue[S.pos]].level!==t.level);
+  b.onclick=lastOfLevel?()=>levelScreen(t.level,false):next;
+  app.append(b); b.scrollIntoView({behavior:"smooth",block:"nearest"});
+}
+
+function rChoice(t,body){
+  shuffle(t.opts.map((o,i)=>i)).forEach(i=>{
+    const b=$("button","btn",esc(t.opts[i])); b.dataset.i=i;
+    b.onclick=()=>{ if(cur.done)return; if(i===t.a){b.classList.add("good");right();} else {b.disabled=true;wrong(b);} };
+    body.append(b);
+  });
+}
+function rTF(t,body){
+  const r=$("div","row");
+  [["Верно ✓",true],["Неверно ✗",false]].forEach(([l,v])=>{
+    const b=$("button","btn",l); b.dataset.v=v;
+    b.onclick=()=>{ if(cur.done)return; if(v===t.a){b.classList.add("good");right();} else {b.disabled=true;wrong(b);} };
+    r.append(b);
+  });
+  body.append(r);
+}
+function rNe(t,body){
+  const s=$("div","sent",esc(t.before)+' <span class="slot ne" id="slot">не<b>?</b>'+esc(t.word)+'</span>'+esc(t.after)); body.append(s);
+  const r=$("div","row");
+  [["Слитно ‿","join"],["Раздельно |","sep"]].forEach(([l,v])=>{
+    const b=$("button","btn",l); b.dataset.v=v;
+    b.onclick=()=>{ if(cur.done)return;
+      if(v===t.a){b.classList.add("good");document.getElementById("slot").textContent=(v==="join"?"не":"не ")+t.word;right();}
+      else {b.disabled=true;wrong(b);} };
+    r.append(b);
+  });
+  body.append(r);
+}
+function rErr(t,body){
+  const s=$("div","sent");
+  t.tokens.forEach((w,i)=>{
+    const b=$("button","tok",esc(w)); b.dataset.i=i;
+    b.onclick=()=>{ if(cur.done)return; if(i===t.a){b.classList.add("good");right();} else {b.disabled=true;wrong(b);} };
+    s.append(b," ");
+  });
+  body.append(s);
+}
+function rSort(t,body){
+  const pool=$("div","pool"); pool.id="pool";
+  const bins=$("div","bins"); let sel=null;
+  const binEls=t.bins.map((name,bi)=>{const b=$("div","bin");b.dataset.bin=bi;b.setAttribute("role","button");b.append($("div","bt",esc(name)));
+    b.onclick=()=>{ if(sel){place(sel,bi);} }; bins.append(b); return b;});
+  function selectChip(c){ if(sel)sel.classList.remove("sel"); sel=(sel===c?null:c); if(sel)sel.classList.add("sel"); }
+  function place(c,bi){
+    c.classList.remove("sel","badc"); sel=null; binEls[bi].append(c); c.dataset.at=bi;
+    if(!pool.querySelector(".chip"))check();
+  }
+  function check(){
+    const bad=[...bins.querySelectorAll(".chip")].filter(c=>+c.dataset.at!==+c.dataset.bin);
+    if(!bad.length){right();return;}
+    bad.forEach(c=>{c.classList.add("badc");pool.append(c);c.dataset.at="";setTimeout(()=>c.classList.remove("badc"),1200);});
+    wrong(null);
+  }
+  shuffle(t.items).forEach(([txt,bi])=>{
+    const c=$("button","chip",esc(txt)); c.dataset.bin=bi;
+    let sx,sy,drag=null,id=null;
+    c.addEventListener("pointerdown",e=>{ if(cur.done)return; sx=e.clientX;sy=e.clientY;id=e.pointerId; try{c.setPointerCapture(id);}catch(_){} });
+    c.addEventListener("pointermove",e=>{ if(id!==e.pointerId||cur.done)return;
+      if(!drag&&Math.hypot(e.clientX-sx,e.clientY-sy)>10){ drag=c.cloneNode(true); drag.classList.add("drag"); document.body.append(drag); c.style.opacity=".35"; }
+      if(drag){ drag.style.left=e.clientX+"px"; drag.style.top=e.clientY+"px";
+        if(e.clientY>innerHeight-70)scrollBy(0,14); else if(e.clientY<70)scrollBy(0,-14);
+        binEls.forEach(b=>b.classList.remove("over")); const u=document.elementFromPoint(e.clientX,e.clientY); const bb=u&&u.closest(".bin"); if(bb)bb.classList.add("over"); }
+    });
+    const end=e=>{ if(id!==e.pointerId)return; id=null;
+      if(drag){ drag.remove(); drag=null; c.style.opacity=""; binEls.forEach(b=>b.classList.remove("over"));
+        const u=document.elementFromPoint(e.clientX,e.clientY); const bb=u&&u.closest(".bin"); if(bb&&!cur.done)place(c,+bb.dataset.bin);
+        c._dragged=true; setTimeout(()=>c._dragged=false,50);
+      }
+    };
+    c.addEventListener("pointerup",end); c.addEventListener("pointercancel",end);
+    c.onclick=e=>{ e.stopPropagation(); if(c._dragged||cur.done)return;
+      if(c.parentElement!==pool){ pool.append(c); c.dataset.at=""; return; }
+      selectChip(c); };
+    pool.append(c);
+  });
+  body.append(pool,bins,$("div","hintsmall","Ошибся с группой? Нажми на сочетание в группе — оно вернётся наверх."));
+}
+function rMatch(t,body){
+  const g=$("div","mgrid"); let selL=null, n=0;
+  const L=shuffle(t.pairs.map((p,i)=>i)), R=shuffle(t.pairs.map((p,i)=>i));
+  for(let k=0;k<t.pairs.length;k++){
+    const l=$("button","btn",esc(t.pairs[L[k]][0])); l.dataset.side="L"; l.dataset.i=L[k];
+    const r=$("button","btn",esc(t.pairs[R[k]][1])); r.dataset.side="R"; r.dataset.i=R[k];
+    l.onclick=()=>{ if(l.dataset.done||cur.done)return; if(selL)selL.classList.remove("chip","sel"); selL=l; l.classList.add("chip","sel"); };
+    r.onclick=()=>{ if(r.dataset.done||cur.done||!selL)return;
+      if(selL.dataset.i===r.dataset.i){ n++; [selL,r].forEach(x=>{x.classList.remove("chip","sel");x.classList.add("pair"+n);x.dataset.done=1;}); selL=null;
+        if(n===t.pairs.length)right(); }
+      else { selL.classList.remove("chip","sel"); selL=null; wrong(r); setTimeout(()=>r.classList.remove("badc"),900); } };
+    g.append(l,r);
+  }
+  body.append(g);
+}
+function rOrder(t,body){
+  const list=$("div","olist"), rest=$("div",""); const chosen=[];
+  const idx=shuffle(t.items.map((x,i)=>i));
+  function draw(){
+    list.innerHTML=""; chosen.forEach((i,k)=>{const d=$("button","oitem");d.dataset.i=i;d.innerHTML='<span class="n">'+(k+1)+'</span><span>'+esc(t.items[i])+'</span>';
+      d.onclick=()=>{ if(cur.done)return; chosen.splice(k,1); draw(); }; list.append(d);});
+    rest.innerHTML=""; idx.filter(i=>!chosen.includes(i)).forEach(i=>{const b=$("button","btn",esc(t.items[i]));b.dataset.i=i;
+      b.onclick=()=>{ if(cur.done)return; chosen.push(i); draw(); if(chosen.length===t.items.length)check(); }; rest.append(b);});
+  }
+  function check(){
+    if(chosen.every((v,k)=>v===k)){right();}
+    else { list.querySelectorAll(".oitem").forEach((d,k)=>{ if(+d.dataset.i!==k)d.classList.add("badc"); }); wrong(null);
+      setTimeout(()=>{ if(!cur.done){chosen.length=0;draw();} },1400); }
+  }
+  draw(); body.append(list,rest,$("div","hintsmall","Нажми на выбранный шаг, чтобы убрать его."));
+}
+
+function dateStr(){return new Date().toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:"numeric"});}
+function finish(){
+  const total=ALL.length, ok=ALL.filter(t=>S.first[t.id]).length, pct=Math.round(ok/total*100);
+  const stars=pct>=90?3:pct>=60?2:1;
+  const errs=ALL.filter(t=>!S.first[t.id]);
+  app.innerHTML=""; document.getElementById("bar").style.width="100%"; document.getElementById("stat").textContent="Квест пройден!";
+  app.dataset.task="final";
+  app.append($("div","lvl","Итог · "+dateStr()),$("h1",null,"Все 4 уровня пройдены! 🏆"),
+    $("div","stars","⭐".repeat(stars)+"☆".repeat(3-stars)),
+    $("div","big",ok+" из "+total),$("p",null,"правильно с первой попытки ("+pct+"%). Лучшая серия: "+S.best+"."));
+  const msg=stars===3?"Частица НЕ теперь слушается тебя с полуслова.":stars===2?"Хороший результат! Ещё немного — и НЕ перестанет тебя запутывать.":"Начало положено! Пройди работу над ошибками — это быстрее, чем кажется.";
+  app.append($("p",null,msg));
+  if(errs.length){
+    const subs=[...new Set(errs.map(t=>t.sub))];
+    app.append($("p",null,"<b>Стоит повторить:</b> "+subs.map(esc).join(", ")+"."));
+  }
+  app.append($("div","shot","📸 Сделай скриншот этого экрана и отправь учителю."));
+  if(errs.length){const b=$("button","main-btn","Работа над ошибками ("+errs.length+")");b.id="fixBtn";
+    b.onclick=()=>{S.mode="fix";S.queue=shuffle(errs.map(t=>t.id));S.pos=0;S.fixed=0;next();}; app.append(b);}
+  const r=$("button","sec-btn","Начать заново"); r.id="restartBtn"; r.onclick=start; app.append(r);
+}
+function finishFix(){
+  app.innerHTML=""; app.dataset.task="fixfinal"; document.getElementById("stat").textContent="Ошибки исправлены";
+  app.append($("div","lvl","Работа над ошибками · "+dateStr()),$("h1",null,"Ошибки исправлены! 💪"),
+    $("p",null,"Повторено заданий: "+S.queue.length+". С первой попытки в этот раз: "+(S.fixed||0)+"."),
+    $("div","shot","📸 Сделай скриншот и этого экрана — учителю будет приятно."));
+  const r=$("button","main-btn","Начать заново"); r.id="restartBtn"; r.onclick=start; app.append(r);
+}
+start();
+</script>
+</body>
+</html>
